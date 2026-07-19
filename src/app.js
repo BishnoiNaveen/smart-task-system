@@ -55,6 +55,11 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Redirect root path "/" to Swagger API documentation
+app.get("/", (req, res) => {
+  res.redirect("/api-docs");
+});
+
 // 5. REST API Route Mounts
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
