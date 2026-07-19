@@ -1,29 +1,18 @@
-# Enterprise AI-Powered Smart Task & Reminder System API
+# Smart Task & Reminder System 🚀
+### *Full-Stack AI-Powered Productivity Workspace*
 
-A production-ready, feature-rich Express.js REST API structured around the **Model-View-Controller (MVC)** design pattern, backed by **PostgreSQL** (via Prisma ORM), secured with JWT authentication, and augmented by **Google Gemini** & **OpenAI** artificial intelligence endpoints.
+Welcome to the **Smart Task & Reminder System**—a production-ready, feature-rich productivity workspace built around the **Model-View-Controller (MVC)** pattern. 
 
----
-
-## 🚀 Key Features
-
-*   **Secure Authentication:** User signup, login, session token rotation (Access/Refresh), email verification, and password resets using Nodemailer.
-*   **Hierarchical Task Manager:** Create, update, delete, and find tasks with subtask checks, multi-format attachments (Multer), categories, and status states.
-*   **Deterministically Prioritized Tasks:** Tasks calculate an live priority score (0-100) based on deadline urgency, difficulty weights, and progress completeness.
-*   **Recurring Task rescheduler:** Auto-creates new task duplicates shifted forward in date on completion (Daily, Weekly, Monthly cycles).
-*   **Background reminders worker:** A daemon scheduler that scans due tasks, logs notification logs, and sends warning emails via SMTP.
-*   **Dashboard metrics:** Real-time metrics, weekly chart vectors, category counts, and AI bottleneck predictions.
-*   **Double AI provider support:** Swappable abstraction layer between **Google Gemini (1.5 Flash)** and **OpenAI (GPT-4o-mini)** using standard fetch requests.
-*   **AI Smart Features:** Smart NLP task creations ("*finish backend tomorrow at 4pm*"), chatbot coach assistance, weekly productivity performance reports, and forecast predictions.
-*   **Self-documenting Swagger:** Embedded OpenAPI 3.0 specifications served interactively at `/api-docs`.
+The workspace connects a modern, glassmorphic **React + Vite** client-side dashboard to a robust **Express.js** REST API backed by **PostgreSQL** (via Prisma ORM), and supercharged with swappable **Google Gemini** & **OpenAI** artificial intelligence engines.
 
 ---
 
-## 📂 Project Architecture
+## 🏗️ Project Architecture Overview
 
 ```text
 ├── prisma/                    # Database configurations & migrations
 │   └── schema.prisma          # Prisma PostgreSQL schemas definitions
-├── src/                       # Application code root
+├── src/                       # Application backend code root
 │   ├── config/                # Database pool connection & AI provider keys
 │   ├── controllers/           # MVC controllers (process req, calls services, sends res)
 │   ├── docs/                  # Swagger UI OpenAPI specs
@@ -32,29 +21,30 @@ A production-ready, feature-rich Express.js REST API structured around the **Mod
 │   ├── routes/                # Express endpoint routers
 │   ├── services/              # Pure business logic (fetch AI calls, scheduler loops)
 │   ├── utils/                 # Mailer helpers
-│   ├── validators/            # Request body schemas checks
-│   ├── app.js                 # Bootstraps global middleware and mounts routes
 │   └── server.js              # Binds HTTP listener socket and handles process signals
+├── frontend/                  # React + Vite frontend client application
+│   ├── src/
+│   │   ├── components/        # Login, Register, Dashboard, TaskManager, Categories, AIChatCoach
+│   │   ├── api.js             # Fetch wrappers, JWT interceptor, silent token rotation
+│   │   ├── App.jsx            # Layout assembly, global state, toast notification manager
+│   │   └── index.css          # Styling system (CSS variables, Dark/Light Mode themes)
+│   └── vite.config.js         # Configures /api and /uploads proxy redirection
 ├── .env                       # Local secrets configuration file (Git ignored!)
-├── package.json               # Manifest dependencies & run scripts
-└── postman_collection.json    # Importable collection file for API testing
+└── package.json               # Manifest dependencies & run scripts
 ```
 
 ---
 
-## ⚙️ Local Installation & Boot
+## ⚙️ Local Installation & Setup
 
-### 1. Requirements
-Ensure you have **Node.js (v18+)** and **npm** installed.
-
-### 2. Configure Environment `.env`
-Create a `.env` in the root folder with the following variables:
+### 1. Configure Backend `.env`
+Create a `.env` in the root workspace folder with the following variables:
 ```env
 PORT=5000
 NODE_ENV=development
 
-# Database Connection (PostgreSQL connection string)
-DATABASE_URL="postgresql://user:pass@host:port/database?sslmode=require"
+# Database Connection (Neon PostgreSQL connection string)
+DATABASE_URL="postgresql://neondb_owner:npg_G90NaBUspEhD@ep-dry-thunder-awfwzgnf-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 
 # JWT Auth Secrets
 JWT_SECRET="super_secret_key_change_me_in_production_12345"
@@ -62,108 +52,87 @@ JWT_REFRESH_SECRET="super_secret_refresh_key_change_me_in_production_54321"
 
 # AI Provider ("gemini" or "openai")
 AI_PROVIDER="gemini"
-GEMINI_API_KEY="your_google_gemini_api_key"
-OPENAI_API_KEY="your_openai_api_key"
-
-# (Optional) SMTP Server Settings for Emails. (If omitted, Ethereal Mail mock is generated)
-SMTP_HOST="smtp.mailtrap.io"
-SMTP_PORT=2525
-SMTP_USER="smtp_username"
-SMTP_PASS="smtp_password"
+GEMINI_API_KEY="your_google_gemini_api_key_here"
+OPENAI_API_KEY="your_openai_api_key_here"
 ```
 
-### 3. Install packages
+### 2. Launch the Backend Server
+In the root project directory:
 ```bash
+# Install dependencies
 npm install
-```
 
-### 4. Sync Database Schema Migrations
-```bash
-npx prisma migrate dev
-```
+# Sync database models & compile Prisma Client
+npx prisma generate
 
-### 5. Launch Dev Server
-```bash
+# Launch Express server in watch mode (boots on http://localhost:5000)
 npm run dev
 ```
-The server will boot and watch for changes on **`http://localhost:5000`**.
+*Note: Swagger API documentation will be interactively served at [http://localhost:5000/api-docs](http://localhost:5000/api-docs).*
 
----
+### 3. Launch the Frontend Server
+In a new terminal window, navigate to the `frontend` folder:
+```bash
+# Navigate to client directory
+cd frontend
 
-## 📖 API Endpoints Reference
+# Install client dependencies
+npm install
 
-### 🔐 Authentication (`/api/auth`)
-*   `POST /register`: Registers a new user. Default first user is set to `ADMIN`.
-*   `POST /login`: Validates password and issues access (15m) & refresh (7d) tokens.
-*   `POST /refresh-token`: Returns new access token using a refresh token.
-*   `POST /logout`: Clears the refresh token session.
-*   `GET /verify-email`: Verifies signup token.
-*   `POST /forgot-password`: Email link reset request.
-*   `POST /reset-password`: Set new password.
-
-### 🏷️ Categories (`/api/categories`)
-*   `GET /`: List user categories.
-*   `POST /`: Add a category tag (needs `name`, `color` hex code).
-*   `DELETE /:id`: Remove category by ID.
-
-### 📝 Tasks (`/api/tasks`)
-*   `GET /`: Returns page list of tasks. Query parameters: `search`, `status`, `priority`, `categoryId`, `dueDate`, `sortBy` (dueDate, priorityScore, createdAt), `sortOrder` (asc, desc), `page`, `limit`.
-*   `GET /:id`: Detail view of a task including subtasks & attachments.
-*   `POST /`: Create task. (Triggers AI Priority analysis asynchronously).
-*   `PUT /:id`: Edit task. Supports optional single attachment file (`attachment` multipart field).
-*   `DELETE /:id`: Delete task.
-*   `POST /:taskId/subtasks`: Add a subtask.
-*   `PATCH /subtasks/:subtaskId/toggle`: Check/Uncheck subtask completion.
-
-### 📊 Dashboard (`/api/dashboard`)
-*   `GET /`: Compiles task counts, weekly charts, completion ratios, and queries AI for dashboard bottleneck forecasts.
-
-### 🤖 AI Engine (`/api/ai`)
-*   `POST /chat`: Motivation chatbot maintaining conversation context logs.
-*   `POST /smart-task`: Instantly generates and saves a task from natural language text.
-*   `GET /tasks/:taskId/priority`: Runs AI prioritization analyzer on an existing task.
-*   `GET /coach`: Summarizes completed tasks and prints productivity coaching tips.
-*   `GET /report`: Generates weekly performance reports.
-*   `GET /summary`: Prints workload active summaries.
-
----
-
-## 📄 Database ER Diagram layout
-
-```mermaid
-erDiagram
-    User ||--o{ Task : owns
-    User ||--o{ Category : defines
-    User ||--o{ Reminder : logs
-    User ||--o{ ChatHistory : records
-    User ||--o{ Notification : receives
-    User ||--o{ ActivityLog : generates
-    User ||--o{ AISuggestion : receives
-    
-    Category ||--o{ Task : classifies
-    
-    Task ||--o{ Subtask : breaks-into
-    Task ||--o{ Attachment : stores
-    Task ||--o{ Reminder : alerts
+# Launch Vite dev server (boots on http://localhost:5173/)
+npm run dev
 ```
+*Open [http://localhost:5173](http://localhost:5173) in your browser. All requests to `/api` and `/uploads` will automatically proxy to the backend server.*
 
 ---
 
-## 🌐 Production Deployment
+## 🧠 The AI Integration: A Human-Centric Breakdown
 
-### Option A: Railway
-1. Sign up on [Railway.app](https://railway.app).
-2. Connect your GitHub repository.
-3. Click **New Project** > **Deploy from GitHub repo**.
-4. In Railway variables configuration, add environment variables for `DATABASE_URL`, `JWT_SECRET`, `AI_PROVIDER`, etc.
-5. Railway reads `package.json` scripts and automatically provisions the build.
+Rather than coupling the system to a single model, this architecture implements an **Orchestrator-Worker pattern**. The application's backend acts as the central executive (planning, state management, validation), while external LLMs are treated as stateless tools called for specialized tasks.
 
-### Option B: Render
-1. Create a free account on [Render.com](https://render.com).
-2. Click **New** > **Web Service** and link your GitHub repository.
-3. In configurations:
-    *   **Runtime:** Node
-    *   **Build Command:** `npm install`
-    *   **Start Command:** `npm start`
-4. Add Environment Variables inside the **Env** tab.
-5. Render deploys the backend container and generates an HTTPS URL.
+Here is how the AI features work under the hood in a simple, human-digestible format:
+
+### 1. Swappable AI Engine (Gemini ↔ OpenAI)
+The backend abstracts AI calls under `ai.service.js`. If you configure `AI_PROVIDER="gemini"`, it targets **Google Gemini (1.5 Flash)** via REST endpoints using `GEMINI_API_KEY`. If configured for `"openai"`, it targets **OpenAI (GPT-4o-mini)**. The rest of the application remains unchanged.
+
+### 2. Natural Language Task Parsing (Smart Task Bar)
+*   **The Problem:** Manually filling out forms for task title, description, category, priority, and date is tedious.
+*   **The AI Solution:** In the task workspace, you can write: *"review code tomorrow at 5pm high priority work"*.
+*   **How it works:** The text is dispatched to `/api/ai/smart-task`. The AI processes the prompt using the system's current time context, parses the intent, maps the date relative to today, suggests a category (`work`), assigns difficulty, and returns a clean structured JSON schema. The frontend automatically populates the creation form fields.
+
+### 3. Smart Task Prioritization & AI Auditing
+*   **Mathematical Base:** Every task calculates a live, deterministic priority score (0-100) based on:
+    $$\text{Priority Score} = \text{Priority Weight (High: 30, Med: 20, Low: 10)} + \text{Urgency Points (Overdue: 50+, Today: 40, Tomorrow: 25, 3d: 15, 7d: 5)}$$
+*   **AI Audit:** Inside any task card, clicking **"Run Audit"** makes an on-demand request to `/api/ai/tasks/:id/priority`. The AI evaluates the task's title, description, difficulty, estimated time, and deadline, providing a human-readable **reasoning statement** and **actionable steps** to get the task done.
+
+### 4. Interactive Chatbot Coach & Performance Reviews
+*   **Chatbot Coach:** Under the "AI Coach" tab, you can chat with a conversational agent. The backend retrieves the last 10 messages from the database to maintain context memory so the coach remembers what you said.
+*   **Workload Summarizer:** The AI reads all your pending tasks and prints a friendly summary, focal focus points, and a motivating quote.
+*   **Performance Reports:** Clicking "Compile Report" sends your task history data to the AI. It calculates a productivity grade, reviews strengths/weaknesses (e.g., *“You are delaying tasks on Thursdays”*), and gives advice for the upcoming period.
+
+### 5. Smart Offline Fallbacks (Zero-Configuration Mode)
+*   **The Safeguard:** If an API key is missing or the external API fails (500 errors), the application does **not** crash.
+*   **How it works:** The frontend catches failures and switches to a built-in rule-based keyword matcher. If you mention *"priority"* or *"procrastinate"*, it returns tailored, natural productivity tips. If you mention arbitrary text, it uses randomized general coaching tips. NLP smart parser falls back to standard regex extracts. The user gets a smooth, uninterrupted experience.
+
+---
+
+## 🛠️ Key System Assumptions
+*   **Email Verification & Login:** The backend generates email verification links using Nodemailer (auto-creating an Ethereal mail mock if SMTP variables are missing). To make testing simple, the login endpoint verifies credentials but does **not** block users whose `isVerified` status is false.
+*   **Database Constraints:** The project assumes Neon PostgreSQL in production, but Prisma allows migrating to SQLite locally by switching the provider inside `schema.prisma`.
+*   **Session Storage:** Session tokens (`accessToken` and `refreshToken`) and user profile states are stored in browser `localStorage`.
+*   **Attachments:** Attachments are uploaded via Multer to a local `uploads/` directory on the server and linked via relative paths.
+
+---
+
+## ⚖️ Trade-offs Made
+1. **State-Driven Views vs. Router Library:** In the React client, we implemented a custom state-based view router (`currentView = "dashboard" | "tasks" | ...`) rather than `react-router-dom`. This avoids page flash, keeps dependencies minimal, and simplifies state sharing between tabs. However, it means browser back/forward buttons do not track view state.
+2. **Sequential File Uploads:** Task creation is separated from file attachment uploads. Tasks are created first via JSON, and attachments are uploaded during task updates via `multipart/form-data`. This simplifies payload validation on initial creation.
+3. **In-Memory Sorting for Score:** The priority score is calculated dynamically based on the current date, meaning it changes every second. To avoid heavy database computations, tasks are fetched from Postgres sorted by due dates and sorted in-memory by Priority Score on request.
+
+---
+
+## 🔮 Future Improvements Roadmap
+*   **WebSockets Integration:** Transition from polling to live WebSockets notifications for real-time task updates and background reminders.
+*   **Attachment Scan Security:** Integrate antivirus scanning pipelines (e.g., ClamAV) for uploaded files to secure the `uploads` workspace.
+*   **Calendar Sync:** Allow bidirectional synchronization of tasks and deadlines to Google Calendar or Microsoft Outlook via OAuth2.
+*   **Multi-User Collaborative Workspace:** Enable task sharing, comments, and assignments between users in the same category workspaces.

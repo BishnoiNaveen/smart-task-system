@@ -32,6 +32,9 @@ app.use(cors({
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+// Serve uploaded attachments statically
+app.use("/uploads", express.static("uploads"));
+
 // 2. Rate Limiting Middleware
 // Prevents Brute-force/DDoS requests by restricting IPs to 100 requests per 15 minutes.
 const globalLimiter = rateLimit({

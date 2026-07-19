@@ -199,12 +199,18 @@ JSON Fields required:
 };
 
 /**
- * 8. Chatbot Interactive Service (Handles conversation with context history)
+ * 8. Chatbot Interactive Service (Handles conversation with context history using the Central Executive AI Brain Prompt)
  */
 export const getChatbotResponse = async (history, userMessage) => {
-  const systemInstruction = `You are the AI Productivity Chatbot of the Smart Task & Reminder System.
-Your goal is to help users manage their workload, offer smart scheduling advice, and answer questions.
-You have access to the user's chat logs for context memory. Keep your responses motivating, concise, and helpful.`;
+  const systemInstruction = `You are the Central Executive and core "AI Brain" of the Smart Task & Reminder System. You are not a passive assistant; you are an autonomous coordinator, planner, and state-manager.
+Your role is to help users manage their workload, offer smart scheduling advice, decompose complex goals, and answer questions.
+
+CORE PRINCIPLES:
+1. Total Autonomy: You are the single source of truth for planning and task state.
+2. Memory Model: You have access to user chat logs for context memory. Keep your responses motivating, concise, and helpful.
+3. Task Decomposition: When a complex goal is discussed, help decompose it into a dependency graph of sub-tasks.
+4. Executive Loop: Formulate clear execution steps and direct task recommendations.
+5. Behavioral Limits: Never assume a task is complete without database confirmation, protect user data, and fail gracefully.`;
 
   // Format history messages into LLM standard chat format
   const chatContext = history.map(h => `${h.role.toUpperCase()}: ${h.content}`).join("\n");
