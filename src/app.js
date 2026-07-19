@@ -3,6 +3,14 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import swaggerUi from "swagger-ui-express";
+
+import swaggerDocument from "./docs/swagger.js";
+import authRoutes from "./routes/auth.routes.js";
+import categoryRoutes from "./routes/category.routes.js";
+import taskRoutes from "./routes/task.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 
 const app = express();
 
@@ -35,8 +43,10 @@ const globalLimiter = rateLimit({
 });
 app.use(globalLimiter);
 
-// 3. Health Check API Endpoint
-// Helps load-balancers and checkers verify that the application container is responding.
+// 3. Swagger OpenAPI GUI Documentation Mounting
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// 4. Base Health Check API Route
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     status: "healthy",
@@ -45,7 +55,14 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// 4. Fallback 404 Route handler
+// 5. REST API Route Mounts
+app.use("/api/auth", authRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/tasks", taskRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/ai", aiRoutes);
+
+// 6. Fallback 404 Route handler
 // Matches any HTTP route not explicitly defined above and returns a 404 error.
 app.use((req, res, next) => {
   const error = new Error(`Cannot find requested route ${req.method} ${req.originalUrl}`);
@@ -53,7 +70,7 @@ app.use((req, res, next) => {
   next(error);
 });
 
-// 5. Centralized Global Error Handler Middleware
+// 7. Centralized Global Error Handler Middleware
 // Catch-all middleware for any errors thrown inside routes or services.
 app.use((err, req, res, next) => {
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
@@ -69,3 +86,4 @@ app.use((err, req, res, next) => {
 });
 
 export { app };
+

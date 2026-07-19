@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { app } from "./app.js";
+import { startReminderScheduler, stopReminderScheduler } from "./services/reminder.service.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -10,6 +11,9 @@ const server = app.listen(PORT, () => {
   console.log(`📡 Listening on: http://localhost:${PORT}`);
   console.log(`⚙️  Environment:  ${process.env.NODE_ENV || "development"}`);
   console.log(`===============================================`);
+  
+  // Start the background email reminder scanner
+  startReminderScheduler();
 });
 
 // Graceful Shutdown Helpers
@@ -17,6 +21,9 @@ const server = app.listen(PORT, () => {
 const gracefulShutdown = (signal) => {
   console.log(`\n⚠️  Received ${signal}. Starting graceful shutdown...`);
   
+  // Stop background cron threads
+  stopReminderScheduler();
+
   server.close(() => {
     console.log("🛑 HTTP server closed.");
     console.log("👋 Process exit clean.");

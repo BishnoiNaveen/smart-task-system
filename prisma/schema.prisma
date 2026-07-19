@@ -6,15 +6,31 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
-  id         String     @id @default(uuid())
-  email      String     @unique
-  name       String?
-  password   String
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-  tasks      Task[]
-  categories Category[]
+  id                   String         @id @default(uuid())
+  email                String         @unique
+  name                 String?
+  password             String
+  role                 Role           @default(USER)
+  isVerified           Boolean        @default(false)
+  verificationToken    String?
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  refreshToken         String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  tasks                Task[]
+  categories           Category[]
+  reminders            Reminder[]
+  chatHistories        ChatHistory[]
+  notifications        Notification[]
+  activityLogs         ActivityLog[]
+  aiSuggestions        AISuggestion[]
 }
 
 model Category {
@@ -31,17 +47,95 @@ model Category {
 }
 
 model Task {
-  id          String    @id @default(uuid())
+  id            String       @id @default(uuid())
+  title         String
+  description   String?
+  dueDate       DateTime
+  priority      String       // "LOW", "MEDIUM", "HIGH"
+  status        String       // "TODO", "IN_PROGRESS", "COMPLETED"
+  recurring     String       // "NONE", "DAILY", "WEEKLY", "MONTHLY"
+  difficulty    String       @default("MEDIUM") // "EASY", "MEDIUM", "HARD"
+  estimatedTime Float        @default(1.0) // hours
+  completionPct Float        @default(0.0) // 0 to 100
+  categoryId    String?
+  category      Category?    @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subtasks      Subtask[]
+  attachments   Attachment[]
+  reminders     Reminder[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Subtask {
+  id          String   @id @default(uuid())
   title       String
-  description String?
-  dueDate     DateTime
-  priority    String    // "LOW", "MEDIUM", "HIGH"
-  status      String    // "TODO", "IN_PROGRESS", "COMPLETED"
-  recurring   String    // "NONE", "DAILY", "WEEKLY", "MONTHLY"
-  categoryId  String?
-  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  isCompleted Boolean  @default(false)
+  taskId      String
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  filename  String
+  filepath  String   // Storage location path
+  mimetype  String
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Reminder {
+  id        String   @id @default(uuid())
+  title     String
+  remindAt  DateTime
+  isSent    Boolean  @default(false)
+  type      String   // "EMAIL", "SYSTEM"
+  taskId    String?
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChatHistory {
+  id        String   @id @default(uuid())
+  role      String   // "user", "assistant"
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  action    String   // e.g., "USER_REGISTER", "CREATE_TASK", "COMPLETE_TASK"
+  details   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model AISuggestion {
+  id        String   @id @default(uuid())
+  type      String   // "PRIORITY", "PRODUCTIVITY", "SUMMARY", "INSIGHT"
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
